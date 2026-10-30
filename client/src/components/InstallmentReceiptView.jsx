@@ -1,100 +1,194 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, CheckCircle2, Send, Printer, User, ArrowDownRight, Clock } from 'lucide-react';
+import { DollarSign, CheckCircle2, Send, Printer, User, Search, Save, X, Phone, FileText } from 'lucide-react';
 
 export default function InstallmentReceiptView() {
-  const [contracts, setContracts] = useState([]);
-  const [selectedContractId, setSelectedContractId] = useState('');
-  const [selectedContract, setSelectedContract] = useState(null);
+  const [openMode, setOpenMode] = useState('new'); // 'new', 'edit', 'delete'
+  const [voucherNo, setVoucherNo] = useState('0010');
+  const [voucherDate, setVoucherDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  // Customers
+  const [customers, setCustomers] = useState([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerBalance, setCustomerBalance] = useState(0);
 
-  // Form Inputs
-  const [amountReceived, setAmountReceived] = useState('');
-  const [paymentMode, setPaymentMode] = useState('cash'); // 'cash', 'bank', 'split'
-  const [cashAmount, setCashAmount] = useState('');
-  const [bankAmount, setBankAmount] = useState('');
-  const [selectedBank, setSelectedBank] = useState('Meezan Bank');
-  const [remarks, setRemarks] = useState('');
+  // Accounts
+  const [cashAccountTitle, setCashAccountTitle] = useState('CASH IN HAND - H.O');
+  const [cashAccountNo, setCashAccountNo] = useState('1020030001');
+  const [bankAccountTitle, setBankAccountTitle] = useState('TEST BANK');
+  const [bankAccountNo, setBankAccountNo] = useState('1020040002');
+
+  // Amounts
+  const [cashReceived, setCashReceived] = useState('');
+  const [bankReceived, setBankReceived] = useState('');
+  const [generalRemarks, setGeneralRemarks] = useState('');
+
+  // Transactions Grid
+  const [installments, setInstallments] = useState([]);
+  const [allocatedRows, setAllocatedRows] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [receiptResult, setReceiptResult] = useState(null);
+  const [lastSavedVoucher, setLastSavedVoucher] = useState(null);
 
-  const fetchContracts = () => {
-    setLoading(true);
-    fetch('/api/installments')
+  // Load Customers
+  useEffect(() => {
+    fetch('/api/customers/search?q=')
       .then(r => r.json())
-      .then(d => {
-        setContracts(d);
-        if (d.length > 0) {
-          setSelectedContractId(d[0].ID);
-          setSelectedContract(d[0]);
+      .then(data => {
+        setCustomers(data);
+        if (data.length > 0) {
+          handleSelectCustomer(data[0].AccountID);
         }
         setLoading(false);
       })
-      .catch(e => {
-        console.error(e);
+      .catch(err => {
+        console.error(err);
         setLoading(false);
       });
-  };
-
-  useEffect(() => {
-    fetchContracts();
   }, []);
 
-  const handleContractChange = (e) => {
-    const id = parseInt(e.target.value);
-    setSelectedContractId(id);
-    const found = contracts.find(c => c.ID === id);
-    setSelectedContract(found || null);
-    setReceiptResult(null);
-  };
+  const handleSelectCustomer = async (accountId) => {
+    const aid = parseInt(accountId);
+    setSelectedCustomerId(aid);
+    const found = customers.find(c => c.AccountID === aid);
+    setSelectedCustomer(found || null);
 
-  // Keep amounts synchronized
-  const handleAmountChange = (val) => {
-    setAmountReceived(val);
-    if (paymentMode === 'cash') {
-      setCashAmount(val);
-      setBankAmount('0');
-    } else if (paymentMode === 'bank') {
-      setBankAmount(val);
-      setCashAmount('0');
+    try {
+      const res = await fetch(`/api/customers/${aid}/pending-installments`);
+      const data = await res.json();
+      setCustomerBalance(data.customer?.GLBalance || 0);
+      setInstallments(data.installments || []);
+      setAllocatedRows(data.installments || []);
+      recalculateCascade(cashReceived, bankReceived, data.installments || []);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handlePostReceipt = async (e) => {
-    e.preventDefault();
-    const totalVal = parseFloat(amountReceived);
-    if (!totalVal || totalVal <= 0) {
-      alert('Please enter a valid amount received.');
+  // Waterfall FIFO Allocation Logic
+  const recalculateCascade = (cashVal, bankVal, baseInst = installments) => {
+    let unallocatedCash = parseFloat(cashVal) || 0;
+    let unallocatedBank = parseFloat(bankVal) || 0;
+
+    const updated = baseInst.map((item, idx) => {
+      const receivable = item.BalanceDue !== undefined ? item.BalanceDue : item.Receivable;
+      let rowCash = 0;
+      let rowBank = 0;
+
+      // 1. Allocate Cash First
+      if (unallocatedCash > 0) {
+        if (unallocatedCash >= receivable) {
+          rowCash = receivable;
+          unallocatedCash -= receivable;
+        } else {
+          rowCash = unallocatedCash;
+          unallocatedCash = 0;
+        }
+      }
+
+      // 2. Allocate Bank to Remaining Unpaid
+      const remainingNeeded = Math.max(0, receivable - rowCash);
+      if (remainingNeeded > 0 && unallocatedBank > 0) {
+        if (unallocatedBank >= remainingNeeded) {
+          rowBank = remainingNeeded;
+          unallocatedBank -= remainingNeeded;
+        } else {
+          rowBank = unallocatedBank;
+          unallocatedBank = 0;
+        }
+      }
+
+      const totalRec = rowCash + rowBank;
+      let acctTitle = '';
+      if (rowCash > 0 && rowBank > 0) acctTitle = 'CASH & BANK';
+      else if (rowCash > 0) acctTitle = cashAccountTitle;
+      else if (rowBank > 0) acctTitle = bankAccountTitle;
+
+      return {
+        ...item,
+        allocatedCash: rowCash,
+        allocatedBank: rowBank,
+        totalAllocated: totalRec,
+        rowRemarks: generalRemarks || (totalRec > 0 ? 'payment' : ''),
+        accountTitle: acctTitle
+      };
+    });
+
+    setAllocatedRows(updated);
+  };
+
+  const handleCashChange = (val) => {
+    setCashReceived(val);
+    recalculateCascade(val, bankReceived);
+  };
+
+  const handleBankChange = (val) => {
+    setBankReceived(val);
+    recalculateCascade(cashReceived, val);
+  };
+
+  const handleRemarksChange = (val) => {
+    setGeneralRemarks(val);
+    setAllocatedRows(prev => prev.map(r => ({
+      ...r,
+      rowRemarks: val || (r.totalAllocated > 0 ? 'payment' : '')
+    })));
+  };
+
+  // Summaries
+  const totalReceivable = allocatedRows.reduce((sum, r) => sum + (r.BalanceDue !== undefined ? r.BalanceDue : r.Receivable), 0);
+  const totalReceived = allocatedRows.reduce((sum, r) => sum + (r.totalAllocated || 0), 0);
+
+  // Save Voucher (OK Button)
+  const handleSaveVoucher = async () => {
+    if (!selectedCustomerId) {
+      alert('Please select a customer.');
       return;
     }
-    if (!selectedContract) return;
+    if (totalReceived <= 0) {
+      alert('Please enter a valid Cash Received or Bank Received amount.');
+      return;
+    }
 
     setSubmitting(true);
     try {
+      const activeContract = installments[0]?.HInstallmentID;
       const res = await fetch('/api/installments/receipt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          hInstallmentId: selectedContract.ID,
-          customerAccountId: selectedContract.CustomerAccountID,
-          amountReceived: totalVal,
-          cashAmount: paymentMode === 'cash' ? totalVal : (paymentMode === 'bank' ? 0 : parseFloat(cashAmount || 0)),
-          bankAmount: paymentMode === 'bank' ? totalVal : (paymentMode === 'cash' ? 0 : parseFloat(bankAmount || 0)),
-          bankName: selectedBank,
-          remarks: remarks || `Installment payment for ${selectedContract.CustomerName}`
+          contractId: activeContract,
+          customerAccountId: selectedCustomerId,
+          amountReceived: totalReceived,
+          cashAmount: parseFloat(cashReceived) || 0,
+          bankAmount: parseFloat(bankReceived) || 0,
+          bankName: bankAccountTitle,
+          remarks: generalRemarks || `Installments Received Voucher #${voucherNo}`
         })
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      setReceiptResult(data);
-      alert(data.message);
-      fetchContracts();
-      setAmountReceived('');
-      setCashAmount('');
-      setBankAmount('');
-      setRemarks('');
+      setLastSavedVoucher({
+        voucherNo,
+        date: voucherDate,
+        customerName: selectedCustomer?.Name,
+        customerPhone: selectedCustomer?.Ph,
+        totalReceived,
+        settledList: data.settledList
+      });
+
+      alert(`Success: Installments Received Voucher ${voucherNo} posted! GL and installment schedules updated.`);
+      
+      // Auto-increment voucher no and refresh
+      const nextV = (parseInt(voucherNo, 10) + 1).toString().padStart(4, '0');
+      setVoucherNo(nextV);
+      setCashReceived('');
+      setBankReceived('');
+      setGeneralRemarks('');
+      handleSelectCustomer(selectedCustomerId);
     } catch (err) {
       alert(err.message);
     } finally {
@@ -102,228 +196,376 @@ export default function InstallmentReceiptView() {
     }
   };
 
-  const handleShareWhatsAppReceipt = () => {
-    if (!receiptResult || !selectedContract) return;
-    const phone = selectedContract.CustomerPhone || '';
-    const cleanPhone = phone.replace(/[^0-9]/g, '');
+  // WhatsApp Confirmation Dispatch
+  const handleWhatsAppDispatch = () => {
+    const cust = selectedCustomer;
+    if (!cust || !cust.Ph) {
+      alert('Customer mobile number is missing.');
+      return;
+    }
+    const cleanPhone = cust.Ph.replace(/[^0-9]/g, '');
     const formatted = cleanPhone.startsWith('0') ? '92' + cleanPhone.slice(1) : (cleanPhone || '923000000000');
 
-    let msg = `*HAMZA PHONE STORE - INSTALLMENT RECEIPT*\n`;
-    msg += `Receipt No: ${receiptResult.receiptNo}\n`;
-    msg += `Date: ${new Date().toLocaleDateString()}\n`;
-    msg += `Customer: ${selectedContract.CustomerName}\n`;
-    msg += `Contract: ${selectedContract.ContractNo}\n`;
+    let msg = `*CELLON IMS 13 - INSTALLMENTS RECEIVED VOUCHER*\n`;
+    msg += `Voucher No: ${voucherNo}\n`;
+    msg += `Date: ${voucherDate}\n`;
+    msg += `Customer: ${cust.Name}\n`;
+    msg += `Account No: ${cust.NicNo || selectedCustomerId}\n`;
     msg += `------------------------------------\n`;
-    msg += `Amount Received: *Rs. ${receiptResult.settledList?.reduce((s,i)=>s+i.amount,0).toLocaleString()}*\n`;
-    receiptResult.settledList?.forEach(it => {
-      msg += `• Installment #${it.installmentNo}: Rs. ${it.amount.toLocaleString()} (${it.status})\n`;
+    msg += `Amount Received: *Rs. ${totalReceived.toLocaleString()}*\n`;
+    allocatedRows.filter(r => r.totalAllocated > 0).forEach(r => {
+      msg += `• ${r.Detail}: Rs. ${r.totalAllocated.toLocaleString()} (${r.totalAllocated >= r.Receivable ? 'PAID' : 'PARTIAL'})\n`;
     });
     msg += `------------------------------------\n`;
-    msg += `Thank you for your payment!\n`;
-    msg += `BitDev IMS 13 Enterprise ERP`;
+    msg += `Current GL Balance: Rs. ${Math.max(0, customerBalance - totalReceived).toLocaleString()}\n`;
+    msg += `Thank you for your business!\nCellON Mobile Store`;
 
     window.open(`https://wa.me/${formatted}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   return (
-    <div className="space-y-3 p-2 max-w-5xl mx-auto select-none font-sans text-xs pb-8">
-      {/* 1. Window Header Bar */}
-      <div className="win-bevel p-2 bg-[#ECE9D8] border border-[#707070] flex items-center justify-between">
+    <div className="space-y-2 p-2 max-w-6xl mx-auto select-none font-sans text-xs pb-10">
+      {/* 1. Window Header / Title Bar */}
+      <div className="win-bevel p-2 bg-[#0A246A] text-white flex items-center justify-between shadow-xs">
         <div className="flex items-center space-x-2">
-          <DollarSign className="w-5 h-5 text-green-700" />
-          <div>
-            <h1 className="font-extrabold text-sm text-[#0A246A]">Installment Receipt Voucher (frmInstallmentReceipt)</h1>
-            <p className="text-[10px] text-gray-600">BitDev IMS 13 Automated Lump-Sum Installment Allocation Engine</p>
-          </div>
+          <span className="w-4 h-4 rounded-full bg-cyan-400 inline-block"></span>
+          <h1 className="font-bold text-sm tracking-wide">Installments Received Voucher</h1>
         </div>
-        <span className="font-mono text-gray-700 font-bold bg-white px-2 py-0.5 border border-[#808080] rounded">
-          Date: {new Date().toLocaleDateString()}
-        </span>
+        <div className="flex items-center space-x-4 text-xs">
+          <span className="bg-sky-900 px-2 py-0.5 rounded font-mono">CellON IMS 13 Engine</span>
+          <button className="text-gray-300 hover:text-white font-bold">×</button>
+        </div>
       </div>
 
-      {/* 2. Customer & Contract Selector */}
-      <div className="win-bevel p-3 bg-white space-y-2 border border-[#808080]">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
-          <div className="md:col-span-2">
-            <label className="font-bold text-gray-800 block text-[11px] mb-0.5">
-              Select Active Installment Customer / Contract:
-            </label>
-            <select
-              value={selectedContractId}
-              onChange={handleContractChange}
-              className="win-select w-full font-bold text-sm text-[#0A246A] py-1"
+      {/* 2. Open Mode Radio Bar */}
+      <div className="win-bevel px-3 py-1.5 bg-[#2B579A] text-white flex items-center justify-between text-xs font-bold">
+        <span>Open Mode</span>
+        <div className="flex items-center space-x-6">
+          <label className="flex items-center space-x-1 cursor-pointer">
+            <input 
+              type="radio" 
+              name="openMode" 
+              value="new" 
+              checked={openMode === 'new'} 
+              onChange={() => setOpenMode('new')} 
+              className="accent-white" 
+            />
+            <span>New</span>
+          </label>
+          <label className="flex items-center space-x-1 cursor-pointer">
+            <input 
+              type="radio" 
+              name="openMode" 
+              value="edit" 
+              checked={openMode === 'edit'} 
+              onChange={() => setOpenMode('edit')} 
+              className="accent-white" 
+            />
+            <span>Edit</span>
+          </label>
+          <label className="flex items-center space-x-1 cursor-pointer">
+            <input 
+              type="radio" 
+              name="openMode" 
+              value="delete" 
+              checked={openMode === 'delete'} 
+              onChange={() => setOpenMode('delete')} 
+              className="accent-white" 
+            />
+            <span>Delete</span>
+          </label>
+        </div>
+      </div>
+
+      {/* 3. Voucher Headings Group Box */}
+      <fieldset className="win-bevel p-3 bg-[#ECE9D8] border border-[#808080] space-y-2.5">
+        <legend className="font-bold text-[#0A246A] px-1 text-[11px]">Voucher Headings</legend>
+        
+        {/* Row 1: Voucher No, Date, Customer Name, Account No, Balance */}
+        <div className="grid grid-cols-12 gap-2 items-center text-xs">
+          <div className="col-span-2 flex items-center space-x-1">
+            <span className="font-bold whitespace-nowrap">Voucher No.</span>
+            <input 
+              type="text" 
+              value={voucherNo} 
+              onChange={e => setVoucherNo(e.target.value)} 
+              className="win-input w-full font-mono font-bold text-center bg-white" 
+            />
+          </div>
+
+          <div className="col-span-2 flex items-center space-x-1">
+            <span className="font-bold">Date</span>
+            <input 
+              type="date" 
+              value={voucherDate} 
+              onChange={e => setVoucherDate(e.target.value)} 
+              className="win-input w-full bg-white font-mono" 
+            />
+          </div>
+
+          <div className="col-span-4 flex items-center space-x-1">
+            <span className="font-bold whitespace-nowrap">Customer Name</span>
+            <select 
+              value={selectedCustomerId} 
+              onChange={e => handleSelectCustomer(e.target.value)}
+              className="win-input w-full bg-white font-bold"
             >
-              {contracts.map(c => (
-                <option key={c.ID} value={c.ID}>
-                  {c.ContractNo} — {c.CustomerName} ({c.Notes || 'Handset'}) — Total: Rs. {c.TotalAmount.toLocaleString()}
+              {customers.map(c => (
+                <option key={c.AccountID} value={c.AccountID}>
+                  {c.Name} {c.Ph ? `(${c.Ph})` : ''}
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="p-2 bg-blue-50 border border-blue-200 rounded text-[11px] space-y-0.5">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Customer CNIC:</span>
-              <span className="font-mono font-bold">{selectedContract?.CustomerCNIC || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Customer Mobile:</span>
-              <span className="font-mono font-bold text-blue-900">{selectedContract?.CustomerPhone}</span>
-            </div>
-            <div className="flex justify-between border-t border-blue-200 pt-0.5">
-              <span className="text-gray-700 font-bold">Monthly EMI:</span>
-              <span className="font-mono font-black text-blue-900">Rs. {selectedContract?.MonthlyEMI?.toLocaleString()}</span>
-            </div>
+          <div className="col-span-2 flex items-center space-x-1">
+            <span className="font-bold whitespace-nowrap text-[10px]">Account No.</span>
+            <input 
+              type="text" 
+              readOnly 
+              value={selectedCustomer ? `103001${selectedCustomer.AccountID.toString().padStart(4, '0')}` : '1030010015'} 
+              className="win-input w-full bg-gray-100 font-mono text-center" 
+            />
+          </div>
+
+          <div className="col-span-2 flex items-center space-x-1">
+            <span className="font-bold">Balance</span>
+            <input 
+              type="text" 
+              readOnly 
+              value={customerBalance.toLocaleString()} 
+              className="win-input w-full bg-gray-100 font-mono font-bold text-right text-red-700" 
+            />
           </div>
         </div>
-      </div>
 
-      {/* 3. Installment Schedule Table (Shows Pending vs Paid EMIs) */}
-      <div className="win-window-frame bg-white p-1">
-        <div className="bg-[#E0DFD8] p-1.5 border-b border-[#808080] font-bold text-gray-800 text-[11px] flex justify-between">
-          <span>Contract Schedule & Outstanding EMIs ({selectedContract?.ContractNo})</span>
-          <span className="text-gray-600">Plan: {selectedContract?.PlanMonths} Months | Payment Day: {selectedContract?.PaymentDay}th of each month</span>
+        {/* Row 2: Cash Received, Received In Account Title, Account No, Remarks, Received (Bank) */}
+        <div className="grid grid-cols-12 gap-2 items-center text-xs">
+          <div className="col-span-2 flex items-center space-x-1">
+            <span className="font-bold whitespace-nowrap">Cash Received</span>
+            <input 
+              type="number" 
+              value={cashReceived} 
+              onChange={e => handleCashChange(e.target.value)} 
+              placeholder="0"
+              className="win-input w-full font-mono font-bold text-right bg-[#FFFFE0] text-emerald-800" 
+            />
+          </div>
+
+          <div className="col-span-4 flex items-center space-x-1">
+            <span className="font-bold whitespace-nowrap text-[11px]">Received in Account Title</span>
+            <select 
+              value={cashAccountTitle} 
+              onChange={e => setCashAccountTitle(e.target.value)}
+              className="win-input w-full bg-white"
+            >
+              <option value="CASH IN HAND - H.O">CASH IN HAND - H.O</option>
+              <option value="CASH COUNTER 2">CASH COUNTER 2</option>
+              <option value="PETTY CASH">PETTY CASH</option>
+            </select>
+          </div>
+
+          <div className="col-span-2 flex items-center space-x-1">
+            <span className="font-bold whitespace-nowrap text-[10px]">Account No.</span>
+            <input 
+              type="text" 
+              readOnly 
+              value={cashAccountNo} 
+              className="win-input w-full bg-gray-100 font-mono text-center" 
+            />
+          </div>
+
+          <div className="col-span-2 flex items-center space-x-1">
+            <span className="font-bold">Remarks</span>
+            <input 
+              type="text" 
+              value={generalRemarks} 
+              onChange={e => handleRemarksChange(e.target.value)} 
+              placeholder="payment"
+              className="win-input w-full bg-white" 
+            />
+          </div>
+
+          <div className="col-span-2 flex items-center space-x-1">
+            <span className="font-bold">Received</span>
+            <input 
+              type="number" 
+              value={bankReceived} 
+              onChange={e => handleBankChange(e.target.value)} 
+              placeholder="0"
+              className="win-input w-full font-mono font-bold text-right bg-[#E8F4FD] text-sky-800" 
+            />
+          </div>
         </div>
+      </fieldset>
 
-        <div className="overflow-x-auto max-h-56">
-          <table className="w-full border-collapse text-left text-xs">
-            <thead className="bg-[#F0EDE0] sticky top-0 border-b border-[#808080] text-[11px]">
+      {/* 4. Voucher Transactions Detail Grid */}
+      <fieldset className="win-bevel p-2 bg-white border border-[#808080]">
+        <legend className="font-bold text-[#0A246A] px-1 text-[11px]">Voucher Transactions detail</legend>
+        
+        <div className="border border-gray-400 overflow-x-auto min-h-[220px] max-h-[340px] bg-white">
+          <table className="w-full text-left border-collapse font-sans text-xs">
+            <thead className="bg-[#ECE9D8] text-gray-800 border-b border-gray-400 select-none sticky top-0">
               <tr>
-                <th className="dbgrid-header text-center w-12">EMI #</th>
-                <th className="dbgrid-header">Due Date</th>
-                <th className="dbgrid-header text-right">Scheduled Amount</th>
-                <th className="dbgrid-header text-right">Paid Amount</th>
-                <th className="dbgrid-header text-right">Remaining Due</th>
-                <th className="dbgrid-header text-center">Status</th>
-                <th className="dbgrid-header">Notes / Reference</th>
+                <th className="p-1 border-r border-gray-400 text-center w-8">▶</th>
+                <th className="p-1 border-r border-gray-400 font-bold">Due Date</th>
+                <th className="p-1 border-r border-gray-400 font-bold">Detail</th>
+                <th className="p-1 border-r border-gray-400 font-bold text-right">Receivable</th>
+                <th className="p-1 border-r border-gray-400 font-bold text-right bg-amber-50">Cash Received</th>
+                <th className="p-1 border-r border-gray-400 font-bold text-right bg-sky-50">Received</th>
+                <th className="p-1 border-r border-gray-400 font-bold text-right bg-emerald-50">Total Received</th>
+                <th className="p-1 border-r border-gray-400 font-bold">Remarks</th>
+                <th className="p-1 border-r border-gray-400 font-bold">Received in Account</th>
+                <th className="p-1 font-bold text-center w-16">Acct #</th>
               </tr>
             </thead>
             <tbody>
-              {selectedContract?.schedule?.map((s) => {
-                const remaining = s.Amount - s.PaidAmount;
-                const isPaid = s.Status === 'PAID';
-                const isOverdue = s.Status === 'OVERDUE';
-
-                return (
-                  <tr key={s.ID} className={`border-b border-gray-200 ${isPaid ? 'bg-green-50/60' : isOverdue ? 'bg-red-50' : 'bg-white'}`}>
-                    <td className="dbgrid-cell text-center font-bold font-mono">{s.InstallmentNo}</td>
-                    <td className="dbgrid-cell font-mono">{s.DueDate}</td>
-                    <td className="dbgrid-cell text-right font-mono">Rs. {s.Amount.toLocaleString()}</td>
-                    <td className="dbgrid-cell text-right font-mono font-bold text-green-700">Rs. {s.PaidAmount.toLocaleString()}</td>
-                    <td className="dbgrid-cell text-right font-mono font-black text-red-700">Rs. {remaining.toLocaleString()}</td>
-                    <td className="dbgrid-cell text-center">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        isPaid ? 'bg-green-600 text-white' : isOverdue ? 'bg-red-600 text-white' : 'bg-blue-100 text-blue-900'
-                      }`}>
-                        {s.Status}
-                      </span>
+              {allocatedRows.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="p-6 text-center text-gray-400 italic">
+                    No pending installments found for this customer.
+                  </td>
+                </tr>
+              ) : (
+                allocatedRows.map((row, idx) => (
+                  <tr key={idx} className={`border-b border-gray-200 hover:bg-sky-50 ${idx % 2 === 1 ? 'bg-gray-50' : ''}`}>
+                    <td className="p-1 border-r border-gray-200 text-center font-mono text-[10px] text-gray-400">
+                      {row.totalAllocated > 0 ? '▶' : ''}
                     </td>
-                    <td className="dbgrid-cell text-gray-600 truncate max-w-xs">{s.Notes || '-'}</td>
+                    <td className="p-1 border-r border-gray-200 font-mono font-medium whitespace-nowrap">
+                      {row.DueDate}
+                    </td>
+                    <td className="p-1 border-r border-gray-200 font-semibold text-gray-800">
+                      {row.Detail}
+                    </td>
+                    <td className="p-1 border-r border-gray-200 text-right font-mono font-bold text-slate-800">
+                      {(row.BalanceDue !== undefined ? row.BalanceDue : row.Receivable).toLocaleString()}
+                    </td>
+                    <td className="p-1 border-r border-gray-200 text-right font-mono font-bold text-amber-800 bg-amber-50/50">
+                      {(row.allocatedCash || 0).toLocaleString()}
+                    </td>
+                    <td className="p-1 border-r border-gray-200 text-right font-mono font-bold text-sky-800 bg-sky-50/50">
+                      {(row.allocatedBank || 0).toLocaleString()}
+                    </td>
+                    <td className="p-1 border-r border-gray-200 text-right font-mono font-extrabold text-emerald-700 bg-emerald-50/50">
+                      {(row.totalAllocated || 0).toLocaleString()}
+                    </td>
+                    <td className="p-1 border-r border-gray-200 font-mono text-gray-600">
+                      {row.rowRemarks || '-'}
+                    </td>
+                    <td className="p-1 border-r border-gray-200 text-gray-700 font-medium whitespace-nowrap">
+                      {row.accountTitle || '-'}
+                    </td>
+                    <td className="p-1 text-center font-mono text-[10px] text-gray-500">
+                      {row.totalAllocated > 0 ? (row.allocatedCash > 0 ? '102003' : '102004') : '-'}
+                    </td>
                   </tr>
-                );
-              })}
+                ))
+              )}
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* 4. Voucher Payment Entry & Lump-Sum Allocation Box */}
-      <form onSubmit={handlePostReceipt} className="win-bevel p-3 bg-[#ECE9D8] border border-[#707070] space-y-3">
-        <div className="font-bold text-sm text-[#0A246A] border-b border-[#808080] pb-1 flex justify-between">
-          <span>Receipt Settlement & Auto-Allocation</span>
-          <span className="text-[10px] text-gray-600">BitDev splits lump-sum across multiple EMIs automatically</span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-          {/* Amount Input */}
-          <div className="md:col-span-2">
-            <label className="font-bold text-gray-800 block text-xs mb-1">
-              Total Amount Received from Customer (Lump-Sum):
-            </label>
-            <div className="relative">
-              <span className="absolute left-2.5 top-1.5 font-bold text-gray-500 text-sm">Rs.</span>
-              <input
-                type="number"
-                value={amountReceived}
-                onChange={(e) => handleAmountChange(e.target.value)}
-                placeholder="Enter any amount (e.g. 15,000)..."
-                className="win-input w-full pl-9 pr-3 py-1.5 font-mono text-base font-black text-[#0A246A]"
-                required
-                autoFocus
-              />
-            </div>
-            <p className="text-[10px] text-gray-600 mt-1">
-              * BitDev will clear due installments in order and apply any extra towards the next EMI!
-            </p>
+        {/* 5. Summary Footer Row */}
+        <div className="flex items-center justify-end space-x-6 p-2 bg-[#ECE9D8] border-t border-gray-400 mt-1 font-bold text-xs">
+          <div className="flex items-center space-x-2">
+            <span>Total Receivable</span>
+            <input 
+              type="text" 
+              readOnly 
+              value={totalReceivable.toLocaleString()} 
+              className="win-input w-28 bg-white font-mono font-bold text-right" 
+            />
           </div>
 
-          {/* Payment Mode */}
-          <div>
-            <label className="font-bold text-gray-800 block text-xs mb-1">Payment Method:</label>
-            <select
-              value={paymentMode}
-              onChange={(e) => setPaymentMode(e.target.value)}
-              className="win-select w-full py-1.5 text-xs font-bold"
-            >
-              <option value="cash">Full Cash Payment</option>
-              <option value="bank">Direct Bank / Online Transfer</option>
-              <option value="split">Split Cash + Bank</option>
-            </select>
-          </div>
-
-          {/* Bank Selector */}
-          <div>
-            <label className="font-bold text-gray-800 block text-xs mb-1">Deposit Account:</label>
-            <select
-              value={selectedBank}
-              onChange={(e) => setSelectedBank(e.target.value)}
-              className="win-select w-full py-1.5 text-xs font-bold"
-              disabled={paymentMode === 'cash'}
-            >
-              <option value="Meezan Bank">Meezan Bank Ltd</option>
-              <option value="HBL">Habib Bank Ltd (HBL)</option>
-              <option value="Bank Alfalah">Bank Alfalah</option>
-              <option value="JazzCash">JazzCash Merchant</option>
-            </select>
+          <div className="flex items-center space-x-2">
+            <span>Total Received</span>
+            <input 
+              type="text" 
+              readOnly 
+              value={totalReceived.toLocaleString()} 
+              className="win-input w-28 bg-[#FFFFD6] font-mono font-extrabold text-right text-emerald-800 border-emerald-600" 
+            />
           </div>
         </div>
+      </fieldset>
 
-        {/* Remarks Input */}
-        <div>
-          <label className="font-bold text-gray-800 block text-[11px] mb-0.5">Remarks / Payment Reference:</label>
-          <input
-            type="text"
-            value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
-            placeholder="e.g. Received by Counter 1, monthly installment deposit..."
-            className="win-input w-full text-xs py-1"
-          />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="border-t border-[#808080] pt-2 flex justify-between items-center">
-          <div>
-            {receiptResult && (
-              <button
-                type="button"
-                onClick={handleShareWhatsAppReceipt}
-                className="win-btn bg-emerald-600 text-white font-bold py-1.5 px-3 flex items-center space-x-1.5 hover:bg-emerald-700"
-              >
-                <Send className="w-4 h-4" />
-                <span>Send WhatsApp Receipt (Receipt #{receiptResult.receiptNo})</span>
-              </button>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting || !amountReceived}
-            className="win-btn bg-[#0A246A] text-white font-black py-1.5 px-6 text-sm hover:brightness-110 disabled:opacity-50"
+      {/* 6. Action Buttons Bar (Replicating Screenshot 685-688) */}
+      <div className="win-bevel p-2 bg-[#ECE9D8] border border-[#707070] flex flex-wrap items-center justify-between gap-2 shadow-xs">
+        <div className="flex items-center space-x-2">
+          {/* WhatsApp Button */}
+          <button 
+            onClick={handleWhatsAppDispatch}
+            className="win-btn px-3 py-1 flex items-center space-x-1.5 font-bold text-emerald-800 hover:bg-emerald-100"
+            title="Dispatch WhatsApp Confirmation Receipt"
           >
-            {submitting ? 'Allocating & Posting...' : '✔ Post Installment Voucher (Enter)'}
+            <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center font-mono text-[10px]">W</span>
+            <span>Wts</span>
+          </button>
+
+          {/* SMS Button */}
+          <button 
+            onClick={() => alert(`SMS voucher dispatch queued for ${selectedCustomer?.Ph}`)}
+            className="win-btn px-3 py-1 flex items-center space-x-1.5 font-bold text-sky-800 hover:bg-sky-100"
+            title="Send SMS Voucher Receipt"
+          >
+            <Phone className="w-3.5 h-3.5 text-sky-700" />
+            <span>SMS</span>
+          </button>
+
+          {/* Print Button */}
+          <button 
+            onClick={() => window.print()}
+            className="win-btn px-3 py-1 flex items-center space-x-1.5 font-bold text-gray-800"
+          >
+            <Printer className="w-3.5 h-3.5 text-gray-700" />
+            <span>Print</span>
+          </button>
+
+          {/* Preview Button */}
+          <button 
+            onClick={() => alert(`Previewing IRV Voucher ${voucherNo}`)}
+            className="win-btn px-3 py-1 flex items-center space-x-1.5 font-bold text-gray-800"
+          >
+            <FileText className="w-3.5 h-3.5 text-blue-700" />
+            <span>Preview</span>
+          </button>
+
+          {/* Search Button */}
+          <button 
+            onClick={() => alert('Search existing IRV vouchers')}
+            className="win-btn px-3 py-1 flex items-center space-x-1.5 font-bold text-gray-800"
+          >
+            <Search className="w-3.5 h-3.5 text-gray-600" />
+            <span>Search</span>
           </button>
         </div>
-      </form>
+
+        {/* OK / Cancel Buttons */}
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={handleSaveVoucher}
+            disabled={submitting}
+            className="win-btn px-5 py-1 flex items-center space-x-1.5 font-extrabold bg-[#2B579A] text-white hover:bg-[#1E3F70]"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>OK</span>
+          </button>
+
+          <button 
+            onClick={() => {
+              setCashReceived('');
+              setBankReceived('');
+              setGeneralRemarks('');
+              handleSelectCustomer(selectedCustomerId);
+            }}
+            className="win-btn px-4 py-1 flex items-center space-x-1.5 font-bold text-red-700 hover:bg-red-50"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>Cancel</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

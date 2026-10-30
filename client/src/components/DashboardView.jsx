@@ -8,6 +8,7 @@ import {
 export default function DashboardView({ onOpenTab }) {
   const [kpis, setKpis] = useState(null);
   const [installments, setInstallments] = useState([]);
+  const [glMismatches, setGlMismatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(null);
@@ -16,11 +17,13 @@ export default function DashboardView({ onOpenTab }) {
     setLoading(true);
     Promise.all([
       fetch('/api/analytics/kpis').then(r => r.json()),
-      fetch('/api/installments/dues?filter=all').then(r => r.json())
+      fetch('/api/installments/dues?filter=all').then(r => r.json()),
+      fetch('/api/analytics/gl-mismatch').then(r => r.json()).catch(() => ({ mismatches: [] }))
     ])
-      .then(([kpiData, duesData]) => {
+      .then(([kpiData, duesData, mismatchData]) => {
         setKpis(kpiData);
         setInstallments(duesData);
+        setGlMismatches(mismatchData.mismatches || []);
         setLoading(false);
       })
       .catch(e => {
@@ -452,7 +455,74 @@ export default function DashboardView({ onOpenTab }) {
         </div>
       </div>
 
-      {/* 4. Quick Actions Launcher Bar */}
+      {/* 4. CellON IMS 13 Operational Integrity: GL Mismatch with Installments Widget */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-4 space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div className="flex items-center space-x-2">
+            <span className={`w-3 h-3 rounded-full ${glMismatches.length > 0 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`}></span>
+            <div>
+              <h2 className="text-xs font-black text-slate-900 uppercase tracking-wide">GL mismatch with installments.</h2>
+              <p className="text-[10px] text-slate-500">Continuous audit comparing General Ledger customer debit balances against outstanding installment schedules</p>
+            </div>
+          </div>
+          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${glMismatches.length > 0 ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'}`}>
+            {glMismatches.length > 0 ? `${glMismatches.length} Mismatch${glMismatches.length > 1 ? 'es' : ''} Detected` : 'All Accounts Reconciled'}
+          </span>
+        </div>
+
+        {glMismatches.length === 0 ? (
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs flex items-center space-x-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Zero reconciliation errors: All customer GL balances match active installment repayment obligations.</span>
+          </div>
+        ) : (
+          <div className="border border-slate-200 rounded-lg overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead className="bg-[#ECE9D8] text-slate-800 border-b border-slate-300 font-bold select-none">
+                <tr>
+                  <th className="p-2 border-r border-slate-300">Account No</th>
+                  <th className="p-2 border-r border-slate-300">Name</th>
+                  <th className="p-2 border-r border-slate-300 text-right">GL Balance</th>
+                  <th className="p-2 border-r border-slate-300 text-right">Installments Remaining</th>
+                  <th className="p-2 border-r border-slate-300 text-right text-red-700">Discrepancy (Δ)</th>
+                  <th className="p-2 text-center w-28">Quick Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {glMismatches.map((m, idx) => (
+                  <tr key={idx} className="border-b border-slate-100 hover:bg-red-50/50 transition-colors">
+                    <td className="p-2 border-r border-slate-100 font-mono font-bold text-slate-700">
+                      {m.accountNo}
+                    </td>
+                    <td className="p-2 border-r border-slate-100 font-bold text-slate-900">
+                      {m.name}
+                    </td>
+                    <td className="p-2 border-r border-slate-100 font-mono text-right text-slate-800">
+                      Rs. {m.glBalance.toLocaleString()}
+                    </td>
+                    <td className="p-2 border-r border-slate-100 font-mono text-right font-bold text-sky-800">
+                      Rs. {m.installmentBalance.toLocaleString()}
+                    </td>
+                    <td className="p-2 border-r border-slate-100 font-mono text-right font-extrabold text-red-700">
+                      Rs. {m.difference.toLocaleString()}
+                    </td>
+                    <td className="p-2 text-center">
+                      <button
+                        onClick={() => onOpenTab('installment_receipt')}
+                        className="px-2 py-0.5 bg-[#2B579A] text-white hover:bg-[#1E3F70] rounded font-bold text-[10px]"
+                      >
+                        Adjust in IRV
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* 5. Quick Actions Launcher Bar */}
       <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-2">
         <span className="font-black text-slate-800 text-xs uppercase tracking-wide">Quick Launch ERP Modules:</span>
         <div className="flex flex-wrap gap-2">
