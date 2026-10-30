@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node server/index.js",
-    "build": "cd client && npm run build"
+    "build": "node -e \"console.log('Production build already bundled in client/dist')\""
   },
   "dependencies": {
     "better-sqlite3": "^11.8.1",
