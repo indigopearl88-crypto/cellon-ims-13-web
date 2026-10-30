@@ -1,6 +1,6 @@
-# CellON IMS 13 - Complete Web ERP & Installment Management System
+# BitDev IMS 13 - Complete Web ERP & Installment Management System
 
-A high-performance, full-stack web edition of **CellON IMS 13 (Toheed Soft Lahore)**, faithfully reproducing the specialized Pakistan mobile phone wholesale, retail, and installment workflow. It features an **11-panel Analytical KPI Dashboard**, an **automated Equated Monthly Installment (EMI) engine**, **smart Urdu WhatsApp recovery reminders**, **lump-sum cascading installment vouchers**, **IMEI lifecycle tracking**, and a **4-level double-entry financial accounting system**.
+A high-performance, full-stack web edition of **BitDev IMS 13 Enterprise ERP**, providing specialized mobile phone wholesale, retail, and installment workflows. It features an **11-panel Analytical KPI Dashboard**, an **automated Equated Monthly Installment (EMI) engine**, **smart Urdu WhatsApp recovery reminders**, **lump-sum cascading installment vouchers**, **IMEI lifecycle tracking**, and a **4-level double-entry financial accounting system**.
 
 ---
 
@@ -16,8 +16,8 @@ A high-performance, full-stack web edition of **CellON IMS 13 (Toheed Soft Lahor
 - **Inventory Velocity & Dead Stock Alerts**: Automatic warnings for fast-moving models (< 7 days) and idle dead stock (> 60 days).
 - **Universal Google-Style Search**: Instant lookup across 15-digit IMEIs, customer CNICs, mobile numbers, and contracts.
 
-### 2. CellON IMS 13 Installment Engine (`F2`)
-- **Transaction Mode Switcher**: Toggle between `[Regular Cash/Credit Sale]` and `[CellON IMS 13 Installment Contract]`.
+### 2. BitDev IMS 13 Installment Engine (`F2`)
+- **Transaction Mode Switcher**: Toggle between `[Regular Cash/Credit Sale]` and `[BitDev IMS 13 Installment Contract]`.
 - **Equated Monthly Installment (EMI) Generator**:
   - Flexible plans (3, 6, 10, or 12 months).
   - Advance down payment deduction with automatic double-entry journal posting.
@@ -36,7 +36,7 @@ A high-performance, full-stack web edition of **CellON IMS 13 (Toheed Soft Lahor
 - **Split Payment Tender**: Supports splitting between Counter Cash and Bank Transfer (Meezan, HBL) in a single receipt.
 
 ### 5. Dual Interface Theme (Modern Web + Classic Desktop)
-- **Modern Web ERP**: Clean SaaS interface matching the official CellON IMS 13 video tutorial with responsive cards, sidebar, and SVG donut charts.
+- **Modern Web ERP**: Clean SaaS interface featuring responsive cards, sidebar, and SVG donut charts.
 - **Classic Windows Desktop Shell**: Visual Basic 6 desktop experience featuring MDI windows, classic 3D bevels, toolbars, and status bar.
 - Toggle between themes with a single click.
 
@@ -93,7 +93,7 @@ Open **[http://localhost:5000](http://localhost:5000)** in your browser.
 ## 🏗️ Architecture & Tech Stack
 
 ```
-cellon-ims-13-web/
+bitdev-ims-13/
 ├── client/                     # React Frontend (Vite, Tailwind CSS, Lucide)
 │   ├── src/
 │   │   ├── components/         # MDI Windows, Modern Dashboard, POS, Recovery
@@ -115,4 +115,4 @@ cellon-ims-13-web/
 ---
 
 ## 📄 License
-MIT License. Inspired by Toheed Soft CellON IMS 13 (Lahore, Pakistan).
+MIT License. BitDev Enterprise ERP.

@@ -10,7 +10,7 @@ db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
 function initDatabase() {
-  console.log('Initializing CellOn XI Database...');
+  console.log('Initializing BitDev Database...');
 
   // Create Schema
   db.exec(`
@@ -198,7 +198,7 @@ function initDatabase() {
       FOREIGN KEY (DetItemID) REFERENCES DetItem(ID)
     );
 
-    /* CellON IMS 13 Installment System Tables */
+    /* BitDev IMS 13 Installment System Tables */
     CREATE TABLE IF NOT EXISTS HInstallment (
       ID INTEGER PRIMARY KEY AUTOINCREMENT,
       ContractNo TEXT UNIQUE,
@@ -492,7 +492,7 @@ function initDatabase() {
     console.log('Seeded sample mobile handset IMEIs in DetItem.');
   }
 
-  // Seed CellON IMS Installment Contracts if empty
+  // Seed BitDev IMS Installment Contracts if empty
   const instCount = db.prepare('SELECT count(*) as cnt FROM HInstallment').get().cnt;
   if (instCount === 0) {
     const insertHInst = db.prepare(`
@@ -536,10 +536,10 @@ function initDatabase() {
     `);
     insertCall.run(2, 7, '2026-10-25', 'Usman Ali (RO)', 'Customer requested 5 days time due to salary delay', '2026-10-31', 14000);
 
-    console.log('Seeded CellON IMS Installment plans and schedule.');
+    console.log('Seeded BitDev IMS Installment plans and schedule.');
   }
 
-  console.log('CellOn XI Database Ready.');
+  console.log('BitDev Database Ready.');
 }
 
 module.exports = { db, initDatabase };

@@ -13,7 +13,7 @@ export default function StatusBar({ stockCount, companyName, userName }) {
       {/* Panel 1: Ready Status */}
       <div className="win-statusbar-panel flex-1">
         <span className="font-bold text-green-800">● Ready</span>
-        <span className="ml-2 text-gray-700">| CellON XI Enterprise (Toheed Soft • Lahore)</span>
+        <span className="ml-2 text-gray-700">| BitDev Enterprise ERP (Cloud Edition)</span>
       </div>
 
       {/* Panel 2: User */}

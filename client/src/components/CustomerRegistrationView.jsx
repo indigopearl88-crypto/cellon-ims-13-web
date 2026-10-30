@@ -71,7 +71,7 @@ export default function CustomerRegistrationView() {
           <UserCheck className="w-5 h-5 text-purple-700" />
           <div>
             <h1 className="font-extrabold text-sm text-[#0A246A]">Customer & Guarantor Registration (frmCustomerRegistration)</h1>
-            <p className="text-[10px] text-gray-600">CellON IMS 13 Complete Verification, Bank Security Cheques & Legal Agreement</p>
+            <p className="text-[10px] text-gray-600">BitDev IMS 13 Complete Verification, Bank Security Cheques & Legal Agreement</p>
           </div>
         </div>
         <button

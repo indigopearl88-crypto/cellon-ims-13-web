@@ -21,7 +21,7 @@ import ModernHeader from './components/ModernHeader';
 import ModernSidebar from './components/ModernSidebar';
 
 export default function App() {
-  // View Mode: 'modern' (CellON IMS 13 Web ERP) or 'classic' (Visual Basic 6 Windows XP Shell)
+  // View Mode: 'modern' (BitDev IMS 13 Web ERP) or 'classic' (Visual Basic 6 Windows XP Shell)
   const [viewMode, setViewMode] = useState('modern');
   
   // Active module tab: Defaults directly to Analytical KPI Dashboard!
@@ -50,7 +50,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Global Function Key Shortcuts matching CellOn XI & CellON IMS 13
+  // Global Function Key Shortcuts matching BitDev ERP & BitDev IMS 13
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'F2') {
@@ -93,7 +93,7 @@ export default function App() {
   }, [openTabs]);
 
   const tabDefs = {
-    dashboard: { title: 'KPI Dashboard - [CellON IMS 13]', icon: '/icons/cellonx.ico' },
+    dashboard: { title: 'KPI Dashboard - [BitDev IMS 13]', icon: '/icons/cellonx.ico' },
     sale: { title: 'Sale Invoice - [frmItemSale]', icon: '/extracted/img_187_0x3776F9.jpg' },
     purchase: { title: 'Purchase Information - [frmItemPurchase2]', icon: '/extracted/img_189_0x37AB57.jpg' },
     imei_search: { title: 'IMEI Lifecycle - [frmSearchIMEI]', icon: '/extracted/img_191_0x37E3F6.jpg' },
@@ -214,7 +214,7 @@ export default function App() {
           <div className="flex items-center space-x-4">
             <span className="flex items-center space-x-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-              <strong className="text-slate-700">CellON IMS 13 Engine Active</strong>
+              <strong className="text-slate-700">BitDev IMS 13 Engine Active</strong>
             </span>
             <span>Available Stock: <strong className="text-slate-800">{metrics?.stockCount || 9} Handsets</strong></span>
             <span>Cash in Hand: <strong className="text-emerald-700 font-mono">Rs. {(metrics?.cashBalance || 250000).toLocaleString()}</strong></span>
@@ -222,7 +222,7 @@ export default function App() {
           <div className="flex items-center space-x-3">
             <span>Logged in as: <strong className="text-sky-700">{userSession.userName}</strong></span>
             <span className="text-slate-300">|</span>
-            <span>Toheed Soft • Lahore, Pakistan</span>
+            <span>BitDev Cloud ERP • Enterprise Edition</span>
           </div>
         </footer>
 
@@ -321,7 +321,7 @@ export default function App() {
             <div className="border-b border-[#808080] bg-white text-center">
               <img
                 src="/icons/as.jpg"
-                alt="CellOn XI"
+                alt="BitDev ERP"
                 className="w-[200px] h-[190px] object-cover"
               />
             </div>
@@ -417,13 +417,8 @@ export default function App() {
             </div>
 
             <div className="mt-auto border-t border-[#808080] p-2 bg-[#D4D0C8] text-center space-y-1">
-              <img
-                src="/icons/toheedsoft-logo.png"
-                alt="Toheed Soft Logo"
-                className="h-7 mx-auto object-contain opacity-90"
-              />
-              <div className="text-[10px] font-bold text-[#0A246A]">CellOn XI Mobile ERP</div>
-              <div className="text-[9px] text-gray-600 leading-tight">easy solution. instant support<br />Lahore, Pakistan</div>
+              <div className="text-[11px] font-black text-[#0A246A]">BitDev Enterprise ERP</div>
+              <div className="text-[9px] text-gray-600 leading-tight">Installment & POS Cloud Edition</div>
             </div>
           </div>
         )}
@@ -433,7 +428,7 @@ export default function App() {
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
             <img
               src="/icons/background.jpg"
-              alt="CellOn XI Watermark"
+              alt="BitDev ERP Watermark"
               className="max-w-[400px] max-h-[450px] object-contain"
             />
           </div>
@@ -462,7 +457,7 @@ export default function App() {
           ) : (
             <div className="text-center text-white/70 select-none z-10 space-y-2">
               <img src="/icons/cellonx.ico" alt="" className="w-16 h-16 mx-auto opacity-80" />
-              <h2 className="text-xl font-bold">CELLON XI - MDI Workspace</h2>
+              <h2 className="text-xl font-bold">BITDEV ERP - MDI Workspace</h2>
               <p className="text-xs">Click a module from the top toolbar or press F12 to open Dashboard</p>
               <button onClick={() => openTab('dashboard')} className="win-btn py-1 px-4 mt-2 font-bold text-[#0A246A]">
                 Open KPI Dashboard (F12)

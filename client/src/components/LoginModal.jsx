@@ -6,21 +6,21 @@ export default function LoginModal({ isOpen, onLoginSuccess }) {
   const [userName, setUserName] = useState('Administrator');
   const [password, setPassword] = useState('admin123');
   const [showSplash, setShowSplash] = useState(false);
-  const [splashStatus, setSplashStatus] = useState('Connecting to CellON11 Database...');
+  const [splashStatus, setSplashStatus] = useState('Connecting to BitDev Database...');
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setShowSplash(true);
-    setSplashStatus('Connecting to CellON11 Database...');
+    setSplashStatus('Connecting to BitDev Database...');
 
     setTimeout(() => {
       setSplashStatus('Loading True DBGrid Runtimes & Serials...');
     }, 600);
 
     setTimeout(() => {
-      setSplashStatus('Verifying License: Toheed Soft Lahore...');
+      setSplashStatus('Verifying License: BitDev Cloud ERP...');
     }, 1100);
 
     setTimeout(() => {
@@ -43,22 +43,22 @@ export default function LoginModal({ isOpen, onLoginSuccess }) {
         <div className="win-window-frame p-2 bg-[#ECE9D8] shadow-2xl flex flex-col items-center max-w-[530px] border-4 border-[#A0A0A0]">
           <img
             src="/extracted/img_05_0x1349C4.jpg"
-            alt="Toheed Soft CellOn XI"
+            alt="BitDev ERP"
             className="w-[506px] h-[337px] object-cover border border-[#808080]"
           />
           <div className="w-full mt-2.5 space-y-1.5 px-2">
             <div className="flex justify-between text-[11px] font-bold text-[#0A246A]">
               <span>{splashStatus}</span>
-              <span className="font-mono text-gray-700">CellOn XI v11.0</span>
+              <span className="font-mono text-gray-700">BitDev ERP v13.0</span>
             </div>
             {/* Windows XP / 2000 Style Progress Bar */}
             <div className="w-full h-4 bg-white win-bevel-sunken p-0.5 overflow-hidden">
               <div className="h-full bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 w-4/5 animate-pulse"></div>
             </div>
             <div className="flex items-center justify-between text-[10px] text-gray-600 pt-1 border-t border-[#ACA899]">
-              <span className="font-bold">TOHEED SOFT (Since 2002)</span>
+              <span className="font-bold">BITDEV ERP ENTERPRISE</span>
               <span>easy solution. instant support</span>
-              <span className="text-gray-500">Lahore, Pakistan</span>
+              <span className="text-gray-500">Cloud Edition</span>
             </div>
           </div>
         </div>
@@ -73,7 +73,7 @@ export default function LoginModal({ isOpen, onLoginSuccess }) {
         <div className="h-6 win-titlebar flex items-center justify-between px-2 border-b border-[#000080]">
           <div className="flex items-center space-x-1.5 text-white text-[11px] font-bold">
             <img src="/icons/toheed-t-icon.png" alt="" className="w-3.5 h-3.5 object-contain" />
-            <span>TOHEED SOFT - CellOn XI Security Authentication</span>
+            <span>BITDEV - Security Authentication</span>
           </div>
           <button
             onClick={() => onLoginSuccess({ userName, company, loginType })}
@@ -87,17 +87,13 @@ export default function LoginModal({ isOpen, onLoginSuccess }) {
         {/* Dialog Header Graphic */}
         <div className="p-3 bg-white flex items-center justify-between border-b border-[#808080]">
           <div className="space-y-0.5">
-            <img
-              src="/icons/toheedsoft-logo.png"
-              alt="Toheed Soft Logo"
-              className="h-9 object-contain"
-            />
-            <p className="text-[10px] font-bold text-[#0A246A]">CellON XI • Mobile Telecom & Retail ERP</p>
-            <p className="text-[9px] text-gray-500">easy solution. instant support</p>
+            <div className="text-xl font-black text-sky-700">BitDev ERP</div>
+            <p className="text-[10px] font-bold text-[#0A246A]">Enterprise Telecom & Retail ERP</p>
+            <p className="text-[9px] text-gray-500">Cloud solution & instant support</p>
           </div>
           <img
             src="/icons/cellon-badge.png"
-            alt="CellOn"
+            alt="BitDev"
             className="h-12 object-contain"
           />
         </div>
@@ -113,8 +109,8 @@ export default function LoginModal({ isOpen, onLoginSuccess }) {
                 className="win-select w-full font-bold text-[#0A246A]"
               >
                 <option value="HAMZA PHONE STORE">HAMZA PHONE STORE</option>
-                <option value="CELLON LAHORE DISTRIBUTION">CELLON LAHORE DISTRIBUTION</option>
-                <option value="CELLON DEMO BRANCH">CELLON DEMO BRANCH</option>
+                <option value="BITDEV LAHORE DISTRIBUTION">BITDEV LAHORE DISTRIBUTION</option>
+                <option value="BITDEV DEMO BRANCH">BITDEV DEMO BRANCH</option>
               </select>
             </div>
 
@@ -179,7 +175,7 @@ export default function LoginModal({ isOpen, onLoginSuccess }) {
         {/* Footer */}
         <div className="bg-[#D4D0C8] px-3 py-1.5 text-[10px] text-gray-700 flex justify-between border-t border-white items-center">
           <span>SQL Server: <strong>HAMZAPHONESTORE</strong></span>
-          <span>Database: <strong>CellON11</strong></span>
+          <span>Database: <strong>BitDevDB</strong></span>
           <span className="text-green-800 font-bold">● System Online</span>
         </div>
       </div>

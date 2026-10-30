@@ -10,7 +10,7 @@ export default function MenuBar({ onOpenTab }) {
         { label: 'Company Information', action: () => onOpenTab('dashboard') },
         { label: 'Database Backup (.bak)', action: () => alert('Database is running on live WAL mode. Auto-backup enabled.') },
         { divider: true },
-        { label: 'Exit CellOn XI', action: () => alert('CellOn XI Web is running.') }
+        { label: 'Exit BitDev ERP', action: () => alert('BitDev Web ERP is running.') }
       ]
     },
     {

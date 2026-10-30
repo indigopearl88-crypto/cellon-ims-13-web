@@ -1,7 +1,7 @@
 {
-  "name": "cellon-web",
+  "name": "bitdev-erp",
   "version": "1.0.0",
-  "description": "CellON IMS 13 Mobile ERP & POS Web Edition",
+  "description": "BitDev IMS 13 Mobile ERP & POS Web Edition",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

@@ -45,16 +45,16 @@ export default function ModernHeader({
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 px-4 flex items-center justify-between select-none shadow-xs sticky top-0 z-50">
-      {/* 1. Brand Logo matching YouTube Demo (Cell||onims 13) */}
+      {/* 1. Brand Logo matching BitDev ERP (Bit||dev 13) */}
       <div className="flex items-center space-x-3 shrink-0">
         <div className="flex items-center space-x-2 cursor-pointer" onClick={() => onOpenTab('dashboard')}>
           <div className="flex items-baseline font-black tracking-tight text-2xl font-sans">
-            <span className="text-[#0284C7]">Ce</span>
+            <span className="text-[#0284C7]">Bit</span>
             <span className="inline-flex space-x-0.5 mx-0.5 self-center">
               <span className="w-1 h-5 bg-black rounded-xs inline-block"></span>
               <span className="w-1 h-5 bg-black rounded-xs inline-block"></span>
             </span>
-            <span className="text-[#0284C7]">onims</span>
+            <span className="text-slate-900">dev</span>
             <span className="text-[#0369A1] ml-1 font-extrabold text-2xl">13</span>
           </div>
           <div className="border-l border-slate-300 pl-2 hidden sm:block">
@@ -62,7 +62,7 @@ export default function ModernHeader({
               INSTALLMENT SOFTWARE
             </span>
             <span className="text-[9px] font-bold text-sky-700 leading-none">
-              Toheed Soft Lahore
+              BitDev Enterprise ERP
             </span>
           </div>
         </div>

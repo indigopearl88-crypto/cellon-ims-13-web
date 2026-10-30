@@ -87,7 +87,7 @@ export default function InstallmentRecoveryView() {
           <Clock className="w-5 h-5 text-red-700" />
           <div>
             <h1 className="font-extrabold text-sm text-[#0A246A]">Installment Recovery Center & Dues Monitor</h1>
-            <p className="text-[10px] text-gray-600">CellON IMS 13 Smart Urdu WhatsApp Reminders & Call Center Workflows</p>
+            <p className="text-[10px] text-gray-600">BitDev IMS 13 Smart Urdu WhatsApp Reminders & Call Center Workflows</p>
           </div>
         </div>
 

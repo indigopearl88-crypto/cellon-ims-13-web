@@ -161,15 +161,15 @@ export default function ModernSidebar({ activeTab, onOpenTab, collapsed, onToggl
         <div className="flex items-center justify-between text-slate-400">
           <span className="flex items-center space-x-1.5 text-xs font-bold text-slate-200">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-            <span>CellON Engine Live</span>
+            <span>BitDev Engine Live</span>
           </span>
           <span className="text-[10px] font-mono text-slate-400">v13.0.4</span>
         </div>
 
         <div className="p-2 bg-slate-800/60 rounded-md border border-slate-700/50 flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-bold text-slate-300">Toheed Soft Support</div>
-            <div className="text-[9px] text-slate-400">042-37220000 • Lahore</div>
+            <div className="text-[10px] font-bold text-slate-300">BitDev Support</div>
+            <div className="text-[9px] text-slate-400">Enterprise Cloud • 24/7 Live</div>
           </div>
           <Headphones className="w-4 h-4 text-sky-400" />
         </div>

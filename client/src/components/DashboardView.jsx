@@ -64,7 +64,7 @@ export default function DashboardView({ onOpenTab }) {
     }
     const cleanPhone = item.CustomerPhone.replace(/[^0-9]/g, '');
     const formatted = cleanPhone.startsWith('0') ? '92' + cleanPhone.slice(1) : (cleanPhone || '923000000000');
-    window.open(`https://wa.me/${formatted}?text=${encodeURIComponent(item.urduMessage || 'CellON IMS 13 Installment Reminder')}`, '_blank');
+    window.open(`https://wa.me/${formatted}?text=${encodeURIComponent(item.urduMessage || 'BitDev IMS 13 Installment Reminder')}`, '_blank');
   };
 
   // Calculations for Donut Chart
@@ -83,12 +83,12 @@ export default function DashboardView({ onOpenTab }) {
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h1 className="font-black text-base text-slate-900 tracking-tight">CellON IMS 13 • Analytical Business Dashboard</h1>
+              <h1 className="font-black text-base text-slate-900 tracking-tight">BitDev IMS 13 • Analytical Business Dashboard</h1>
               <span className="bg-sky-100 text-sky-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
                 Live Engine
               </span>
             </div>
-            <p className="text-[11px] text-slate-500">Real-Time Mobile Wholesale, Retail & Installment Intelligence • Toheed Soft</p>
+            <p className="text-[11px] text-slate-500">Real-Time Mobile Wholesale, Retail & Installment Intelligence • BitDev Cloud ERP</p>
           </div>
         </div>
 

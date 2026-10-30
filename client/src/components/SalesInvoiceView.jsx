@@ -21,7 +21,7 @@ export default function SalesInvoiceView({ onPrintInvoice }) {
   const [walkingMobNo, setWalkingMobNo] = useState('');
   const [walkingCNIC, setWalkingCNIC] = useState('');
 
-  // CellON IMS 13 Installment Contract State
+  // BitDev IMS 13 Installment Contract State
   const [saleMode, setSaleMode] = useState('CASH'); // 'CASH' | 'INSTALLMENT'
   const [planMonths, setPlanMonths] = useState(6);
   const [downPayment, setDownPayment] = useState('');
@@ -192,7 +192,7 @@ export default function SalesInvoiceView({ onPrintInvoice }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      // 2. If Installment Mode, Post Installment Contract (CellON IMS 13)
+      // 2. If Installment Mode, Post Installment Contract (BitDev IMS 13)
       if (saleMode === 'INSTALLMENT') {
         const instRes = await fetch('/api/installments/create', {
           method: 'POST',
@@ -255,7 +255,7 @@ export default function SalesInvoiceView({ onPrintInvoice }) {
       msg += `*Balance Remaining: Rs. ${remainingBalance.toLocaleString()}*\n`;
     }
     msg += `--------------------------------\n`;
-    msg += `Toheed Soft CellOn XI • Lahore\n`;
+    msg += `BitDev IMS 13 Enterprise ERP\n`;
     msg += `Thank you for your business!`;
 
     window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -394,7 +394,7 @@ export default function SalesInvoiceView({ onPrintInvoice }) {
         </div>
       </div>
 
-      {/* 2B. CellON IMS 13 - Billing Type Switcher */}
+      {/* 2B. BitDev IMS 13 - Billing Type Switcher */}
       <div className="win-bevel p-2 bg-[#EAE8E1] border border-[#707070] flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center space-x-3">
           <span className="font-extrabold text-[#0A246A] text-xs">Transaction Mode:</span>
@@ -419,7 +419,7 @@ export default function SalesInvoiceView({ onPrintInvoice }) {
               onChange={() => setSaleMode('INSTALLMENT')}
               className="hidden"
             />
-            <span>★ CellON IMS 13 Installment Contract (اقساط فارم)</span>
+            <span>★ BitDev IMS 13 Installment Contract (اقساط فارم)</span>
           </label>
         </div>
 
@@ -430,15 +430,15 @@ export default function SalesInvoiceView({ onPrintInvoice }) {
         )}
       </div>
 
-      {/* 2C. CellON IMS 13 Installment Configuration Drawer */}
+      {/* 2C. BitDev IMS 13 Installment Configuration Drawer */}
       {saleMode === 'INSTALLMENT' && (
         <div className="win-bevel p-2.5 bg-[#F0FFF4] border-2 border-[#15803D] space-y-2 shadow-sm rounded-xs">
           <div className="flex items-center justify-between border-b border-green-300 pb-1">
             <div className="flex items-center space-x-2">
-              <span className="font-black text-xs text-green-900">CellON IMS 13 - Contract Parameters & Schedule Engine</span>
+              <span className="font-black text-xs text-green-900">BitDev IMS 13 - Contract Parameters & Schedule Engine</span>
               <span className="text-[10px] bg-green-200 text-green-800 px-2 py-0.5 rounded font-mono">Contract Auto-No: IMS-NEW</span>
             </div>
-            <span className="text-[11px] text-gray-600 font-medium">Toheed Soft Installment Module</span>
+            <span className="text-[11px] text-gray-600 font-medium">BitDev Enterprise Installment Module</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-center">

@@ -120,7 +120,7 @@ export default function InstallmentReceiptView() {
     });
     msg += `------------------------------------\n`;
     msg += `Thank you for your payment!\n`;
-    msg += `Toheed Soft CellON IMS • Lahore`;
+    msg += `BitDev IMS 13 Enterprise ERP`;
 
     window.open(`https://wa.me/${formatted}?text=${encodeURIComponent(msg)}`, '_blank');
   };
@@ -133,7 +133,7 @@ export default function InstallmentReceiptView() {
           <DollarSign className="w-5 h-5 text-green-700" />
           <div>
             <h1 className="font-extrabold text-sm text-[#0A246A]">Installment Receipt Voucher (frmInstallmentReceipt)</h1>
-            <p className="text-[10px] text-gray-600">CellON IMS 13 Automated Lump-Sum Installment Allocation Engine</p>
+            <p className="text-[10px] text-gray-600">BitDev IMS 13 Automated Lump-Sum Installment Allocation Engine</p>
           </div>
         </div>
         <span className="font-mono text-gray-700 font-bold bg-white px-2 py-0.5 border border-[#808080] rounded">
@@ -231,7 +231,7 @@ export default function InstallmentReceiptView() {
       <form onSubmit={handlePostReceipt} className="win-bevel p-3 bg-[#ECE9D8] border border-[#707070] space-y-3">
         <div className="font-bold text-sm text-[#0A246A] border-b border-[#808080] pb-1 flex justify-between">
           <span>Receipt Settlement & Auto-Allocation</span>
-          <span className="text-[10px] text-gray-600">CellON splits lump-sum across multiple EMIs automatically</span>
+          <span className="text-[10px] text-gray-600">BitDev splits lump-sum across multiple EMIs automatically</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
@@ -253,7 +253,7 @@ export default function InstallmentReceiptView() {
               />
             </div>
             <p className="text-[10px] text-gray-600 mt-1">
-              * CellON will clear due installments in order and apply any extra towards the next EMI!
+              * BitDev will clear due installments in order and apply any extra towards the next EMI!
             </p>
           </div>
 

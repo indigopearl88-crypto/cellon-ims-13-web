@@ -52,7 +52,7 @@ app.get('/api/metrics', (req, res) => {
 });
 
 // ----------------------------------------------------
-// CELLON IMS 13 ANALYTICAL DASHBOARD (11 KPI CARDS)
+// BITDEV IMS 13 ANALYTICAL DASHBOARD (11 KPI CARDS)
 // ----------------------------------------------------
 app.get('/api/analytics/kpis', (req, res) => {
   try {
@@ -97,7 +97,7 @@ app.get('/api/analytics/kpis', (req, res) => {
     // 5. Total Receivables (With Risk Flag)
     const totalReceivables = 730000;
     const lastMonthReceivables = 640000;
-    const isReceivableRisk = totalReceivables > lastMonthReceivables; // Red alert in CellON!
+    const isReceivableRisk = totalReceivables > lastMonthReceivables; // Red alert in BitDev!
     const recGrowth = Math.round(((totalReceivables - lastMonthReceivables) / lastMonthReceivables) * 100);
 
     // 6. Aging & Inactive Payers
@@ -200,7 +200,7 @@ app.get('/api/analytics/kpis', (req, res) => {
 });
 
 // ----------------------------------------------------
-// CELLON IMS INSTALLMENTS MODULE (PLANS & SCHEDULE)
+// BITDEV IMS INSTALLMENTS MODULE (PLANS & SCHEDULE)
 // ----------------------------------------------------
 app.get('/api/installments', (req, res) => {
   try {
@@ -1064,5 +1064,5 @@ app.use((req, res, next) => {
 
 // Start Express Server
 app.listen(PORT, () => {
-  console.log(`CellOn XI Server running on http://localhost:${PORT}`);
+  console.log(`BitDev IMS 13 Server running on http://localhost:${PORT}`);
 });
