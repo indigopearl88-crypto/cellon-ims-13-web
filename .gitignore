@@ -1,0 +1,21 @@
+# Node dependencies
+node_modules/
+client/node_modules/
+
+# Logs & temp files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Database journals & lock files
+cellon.db-shm
+cellon.db-wal
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Vite build cache
+.vite/

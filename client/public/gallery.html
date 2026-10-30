@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Extracted CellOn XI UI Graphics</title>
+  <style>
+    body { font-family: sans-serif; background: #ECE9D8; padding: 20px; }
+    h1 { color: #0A246A; }
+    .grid { display: flex; flex-wrap: wrap; gap: 15px; }
+    .card { background: white; border: 2px solid #707070; padding: 10px; text-align: center; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
+    img { max-height: 120px; object-fit: contain; background: #f0f0f0; border: 1px solid #ccc; }
+    .info { font-size: 11px; font-family: monospace; margin-top: 5px; color: #333; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>CellOn XI - Authentic Extracted UI Graphics & Icons Gallery</h1>
+  <div class="grid" id="gallery"></div>
+
+  <script>
+    const images = [
+      "img_05_0x1349C4.jpg", "img_88_0x2926AA.jpg", "img_07_0x1CF878.jpg", "img_09_0x1E94B3.jpg",
+      "img_223_0x3CD081.jpg", "img_115_0x2D17AD.jpg", "img_14_0x2070A7.jpg", "img_02_0x11DDDA.jpg",
+      "img_03_0x120AFF.jpg", "img_01_0x11B383.jpg", "img_04_0x12381F.jpg", "img_191_0x37E3F6.jpg",
+      "img_189_0x37AB57.jpg", "img_187_0x3776F9.jpg", "img_197_0x38B682.jpg", "img_195_0x384C6F.jpg",
+      "img_193_0x381926.jpg", "img_185_0x373670.jpg", "img_177_0x361606.jpg", "img_175_0x35B919.jpg",
+      "img_173_0x355176.jpg", "img_183_0x37033A.jpg", "img_181_0x36D309.jpg", "img_179_0x3672D6.jpg",
+      "img_217_0x3BEE14.jpg", "img_215_0x3BBAD6.jpg", "img_213_0x3B4DBE.jpg", "img_161_0x32E8CE.jpg",
+      "img_221_0x3C5222.jpg", "img_219_0x3C14C5.jpg", "img_211_0x3B0DE7.jpg", "img_203_0x39BFBE.jpg",
+      "img_201_0x398E0E.jpg", "img_199_0x392141.jpg", "img_209_0x3ACB1B.jpg", "img_207_0x3A636D.jpg",
+      "img_205_0x3A2CF8.jpg", "img_139_0x304763.jpg", "img_137_0x2FE196.jpg", "img_135_0x2FB047.jpg",
+      "img_145_0x311EB9.jpg", "img_143_0x30E43C.jpg", "img_141_0x307460.jpg", "img_133_0x2F7D45.jpg",
+      "img_125_0x2EAD6D.jpg", "img_123_0x2E7B66.jpg", "img_121_0x2E4E81.jpg", "img_131_0x2F4132.jpg",
+      "img_129_0x2F1307.jpg", "img_127_0x2EE1A2.jpg", "img_147_0x3157E7.jpg", "img_165_0x33B849.jpg",
+      "img_163_0x33519D.jpg", "img_117_0x2DABBF.jpg", "img_171_0x34E9CE.jpg", "img_169_0x3482F5.jpg",
+      "img_167_0x3421BB.jpg", "img_159_0x3285AF.jpg", "img_151_0x31C576.jpg", "img_119_0x2E1A1E.jpg",
+      "img_149_0x3193E6.jpg", "img_157_0x32591A.jpg", "img_155_0x3224E2.jpg", "img_153_0x31F463.jpg"
+    ];
+
+    const gallery = document.getElementById('gallery');
+    images.forEach(imgName => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="/extracted/${imgName}" alt="${imgName}" />
+        <div class="info">${imgName}</div>
+      `;
+      gallery.appendChild(card);
+    });
+  </script>
+</body>
+</html>
